@@ -16,31 +16,32 @@ public class CitaDaoImpl implements CitaDao {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-   @Override
+    @Override
     public void reservar(Cita cita) {
-        // 1. Buscamos el ID del médico según la especialidad de la cita
-        String sqlBusqueda = "SELECT id_personal_salud FROM personal_salud " +
-                     "WHERE LOWER(tipo_personal) LIKE LOWER(?) LIMIT 1";
-        
-        try {
-            Integer idMedico = jdbcTemplate.queryForObject(sqlBusqueda, Integer.class, "%" + cita.getEspecialidad() + "%");
-            
-            // 2. Asignamos el ID encontrado a la cita
-            cita.setIdPersonal(idMedico);
-        } catch (Exception e) {
-            // Si no encuentra médico, podrías lanzar una excepción o dejarlo null si es necesario
-            System.out.println("⚠️ No se encontró médico para la especialidad: " + cita.getEspecialidad());
+        // 1. Verificamos si el paciente ya eligió un médico específico en la interfaz web
+        // Si no seleccionó ninguno (o llega como null/0), recién usamos el plan de respaldo automático
+        if (cita.getIdPersonal() == null || cita.getIdPersonal() == 0) {
+            String sqlBusqueda = "SELECT id_personal_salud FROM personal_salud " +
+                                 "WHERE LOWER(tipo_personal) LIKE LOWER(?) LIMIT 1";
+            try {
+                Integer idMedico = jdbcTemplate.queryForObject(sqlBusqueda, Integer.class, "%" + cita.getEspecialidad() + "%");
+                cita.setIdPersonal(idMedico);
+            } catch (Exception e) {
+                System.out.println("⚠️ No se encontró médico de respaldo para la especialidad: " + cita.getEspecialidad());
+            }
         }
 
-        // 3. Ahora guardamos la cita (la lógica de insertar ya la tienes aquí)
-        String sql = "INSERT INTO cita (id_paciente, id_personal_salud, fecha, hora, modalidad, especialidad, estado, sede) VALUES (?, ?, ?, ?, ?, ?, 'Pagado', ?)";
+        // 2. Guardamos la cita usando los parámetros dinámicos exactos decididos por el usuario
+        // Sincronizado estrictamente con el orden de las columnas de tu base de datos (id_paciente, id_personal_salud, fecha, hora, modalidad, especialidad, estado, sede)
+        String sql = "INSERT INTO cita (id_paciente, id_personal_salud, fecha, hora, modalidad, especialidad, estado, sede) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         jdbcTemplate.update(sql, 
             cita.getIdPaciente(), 
-            cita.getIdPersonal(), 
+            cita.getIdPersonal(), // Guarda el ID del médico seleccionado en tu nuevo combobox
             cita.getFecha(), 
-            cita.getHora(), 
-            cita.getModalidad(), 
+            cita.getHora(),       // Guarda la hora exacta (Ej: "08:30:00") elegida por el paciente
+            cita.getModalidad(),  // ✅ Mapeo dinámico corregido ("Virtual" o "Presencial")
             cita.getEspecialidad(),
+            cita.getEstado(),     // Pasa dinámicamente 'Pendiente de Pago' asignado en el Controller
             cita.getSede()
         );
     }
@@ -74,7 +75,7 @@ public class CitaDaoImpl implements CitaDao {
 
     @Override
     public List<Map<String, Object>> listarPorMedico(int idMedico) {
-        // Llamamos al SP que acabamos de crear en BD_clinicaUPN.sql
+        // Llamamos al SP que creamos en BD_clinicaUPN.sql
         String sql = "CALL sp_listar_citas_por_medico(?)";
         return jdbcTemplate.queryForList(sql, idMedico);
     }
