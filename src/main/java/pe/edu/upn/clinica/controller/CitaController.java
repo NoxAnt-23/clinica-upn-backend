@@ -3,6 +3,7 @@ package pe.edu.upn.clinica.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate; // <-- ¡IMPORT NECESARIO AGREGADO!
 import org.springframework.web.bind.annotation.*;
 import pe.edu.upn.clinica.dao.CitaDao;
 import pe.edu.upn.clinica.entity.Cita;
@@ -12,15 +13,22 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/citas")
-
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true") // Aseguramos CORS por si acaso
 public class CitaController {
 
     @Autowired
     private CitaDao citaDao;
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate; // <-- ¡INYECCIÓN MÁGICA AGREGADA PARA RESOLVER EL ERROR!
+
     @PostMapping("/reservar")
     public ResponseEntity<?> reservarCita(@RequestBody Cita cita) {
         try {
+            // 🛡️ PARCHE DE CONTROL: Sobrescribimos cualquier intento de forzar "Pagado" 
+            // Garantiza que la cita nazca como debe ser para que funcione tu modal de Yape
+            cita.setEstado("Pendiente de Pago");
+            
             citaDao.reservar(cita);
             return ResponseEntity.ok().body("{\"mensaje\": \"Cita reservada con éxito\"}");
         } catch (Exception e) {
@@ -67,8 +75,28 @@ public class CitaController {
 
     @GetMapping("/medico/citas/{idMedico}")
     public ResponseEntity<?> listarCitasMedico(@PathVariable int idMedico) {
-        // Aquí llamarías a tu nuevo Stored Procedure sp_listar_citas_por_medico
+        // Llama al método del DAO que configuramos con tu sp_listar_citas_por_medico
         return ResponseEntity.ok(citaDao.listarPorMedico(idMedico));
     }
-    
+
+    // 🔗 Endpoint para actualizar el enlace de teleconsulta de una cita específica
+    @PutMapping("/enlace/{id}")
+    public ResponseEntity<?> actualizarEnlaceCita(@PathVariable int id, @RequestBody Map<String, String> request) {
+        String nuevoEnlace = request.get("enlace");
+        
+        try {
+            // Ejecutamos el query directo para actualizar la columna enlace_sesion en MySQL
+            String sql = "UPDATE cita SET enlace_sesion = ? WHERE id_cita = ?";
+            int filasAfectadas = jdbcTemplate.update(sql, nuevoEnlace, id);
+            
+            if (filasAfectadas > 0) {
+                return ResponseEntity.ok(Map.of("status", "success", "message", "Enlace guardado correctamente"));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No se encontró la cita especificada");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error en el servidor: " + e.getMessage());
+        }
+    }
 }
