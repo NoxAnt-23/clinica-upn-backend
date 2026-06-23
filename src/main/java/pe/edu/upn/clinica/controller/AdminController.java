@@ -5,7 +5,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import pe.edu.upn.clinica.dao.AdminDao;
+import pe.edu.upn.clinica.dao.AdminDAO;
 
 import java.util.List;
 import java.util.Map;
@@ -16,7 +16,7 @@ import java.util.Map;
 public class AdminController {
 
     @Autowired
-    private AdminDao adminDao;
+    private AdminDAO adminDao;
 
     @Autowired
     private PasswordEncoder passwordEncoder;

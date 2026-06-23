@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate; // <-- ¡IMPORT NECESARIO AGREGADO!
 import org.springframework.web.bind.annotation.*;
-import pe.edu.upn.clinica.dao.CitaDao;
+import pe.edu.upn.clinica.dao.CitaDAO;
 import pe.edu.upn.clinica.entity.Cita;
 
 import java.util.List;
@@ -17,7 +17,7 @@ import java.util.Map;
 public class CitaController {
 
     @Autowired
-    private CitaDao citaDao;
+    private CitaDAO citaDao;
 
     @Autowired
     private JdbcTemplate jdbcTemplate; // <-- ¡INYECCIÓN MÁGICA AGREGADA PARA RESOLVER EL ERROR!
@@ -79,7 +79,6 @@ public class CitaController {
         return ResponseEntity.ok(citaDao.listarPorMedico(idMedico));
     }
 
-    // 🔗 Endpoint para actualizar el enlace de teleconsulta de una cita específica
     @PutMapping("/enlace/{id}")
     public ResponseEntity<?> actualizarEnlaceCita(@PathVariable int id, @RequestBody Map<String, String> request) {
         String nuevoEnlace = request.get("enlace");

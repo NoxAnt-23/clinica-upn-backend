@@ -1,13 +1,13 @@
 package pe.edu.upn.clinica.dao.impl;
 
-import pe.edu.upn.clinica.dao.PacienteDao;
+import pe.edu.upn.clinica.dao.PacienteDAO;
 import pe.edu.upn.clinica.entity.Paciente;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class PacienteDaoImpl implements PacienteDao {
+public class PacienteDAOImpl implements PacienteDAO {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;

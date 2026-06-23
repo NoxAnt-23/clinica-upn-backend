@@ -4,7 +4,7 @@ import pe.edu.upn.clinica.entity.Cita;
 import java.util.List;
 import java.util.Map;
 
-public interface CitaDao {
+public interface CitaDAO {
     void reservar(Cita cita);
     List<Map<String, Object>> listarPorPaciente(int idPaciente);
 
@@ -14,4 +14,3 @@ public interface CitaDao {
 
     List<Map<String, Object>> listarPorMedico(int idMedico);
 }
-
