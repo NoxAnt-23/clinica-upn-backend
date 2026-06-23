@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -15,7 +16,6 @@ import java.util.Map;
 @CrossOrigin(origins = "http://localhost:5173")
 public class AuthController {
 
-    // 🔄 Inyectamos tu interfaz clásica que apunta a UsuarioDAOImpl
     @Autowired
     private UsuarioDAO usuarioDAO;
 
@@ -25,14 +25,12 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> request) {
         try {
-            // Extraemos los datos directamente del mapa nativo de la petición HTTP
             String identificador = request.get("identificador");
             String password = request.get("password");
 
             System.out.println("=== INTENTO DE LOGIN (DAO IMPL) ===");
             System.out.println("Identificador recibido: [" + identificador + "]");
             
-            // 🔍 Usamos tu método clásico del DAO que ya configuramos con JdbcTemplate
             Usuario usuario = usuarioDAO.buscarPorCorreo(identificador);
 
             if (usuario == null) {
@@ -42,20 +40,27 @@ public class AuthController {
 
             System.out.println("Usuario encontrado. Rol: " + usuario.getRol());
 
-            // 2. Comparamos la contraseña usando el BCrypt de Spring Security
             boolean coincide = passwordEncoder.matches(password, usuario.getPassword());
             System.out.println("¿La contraseña coincide con BCrypt?: " + coincide);
 
             if (coincide) {
                 System.out.println("✅ LOGIN EXITOSO");
                 
-                // Armamos la respuesta plana mapeando directamente los atributos de tu Entidad
-                return ResponseEntity.ok().body(Map.of(
-                    "idUsuario", usuario.getIdUsuario(),
-                    "correo", usuario.getCorreo(),
-                    "rol", usuario.getRol(),
-                    "cambioPendiente", usuario.getCambioPendiente() // 🆕 Viaja seguro a React
-                ));
+                // 🛠️ Usamos HashMap dinámico para evitar NullPointerException con campos Transient vacíos
+                Map<String, Object> responseBody = new HashMap<>();
+                responseBody.put("idUsuario", usuario.getIdUsuario());
+                responseBody.put("correo", usuario.getCorreo());
+                responseBody.put("rol", usuario.getRol());
+                responseBody.put("cambioPendiente", usuario.getCambioPendiente());
+                
+                // 🆕 EXPEDIMOS LOS NUEVOS ATRIBUTOS DEL PACIENTE AL FRONTEND
+                responseBody.put("idPaciente", usuario.getIdPaciente());
+                responseBody.put("nombre", usuario.getNombre() != null ? usuario.getNombre() : "");
+                responseBody.put("apellido", usuario.getApellido() != null ? usuario.getApellido() : "");
+                responseBody.put("dni", usuario.getDni() != null ? usuario.getDni() : "");
+                responseBody.put("celular", usuario.getCelular() != null ? usuario.getCelular() : "");
+                
+                return ResponseEntity.ok().body(responseBody);
                 
             } else {
                 System.out.println("❌ ERROR: La contraseña no coincide con el Hash.");

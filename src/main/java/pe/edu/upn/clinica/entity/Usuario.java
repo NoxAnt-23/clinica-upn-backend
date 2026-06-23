@@ -20,9 +20,26 @@ public class Usuario {
     @Column(nullable = false, length = 20)
     private String rol;
 
-    // 🆕 NUEVO: Variable bandera para el primer inicio de sesión obligatorio
+    // Variable bandera para el primer inicio de sesión obligatorio
     @Column(name = "cambio_pendiente", nullable = false, columnDefinition = "TINYINT DEFAULT 0")
     private int cambioPendiente;
+
+    // 🆕 NUEVOS ATRIBUTOS EXTRA: Mapeados dinámicamente mediante el LEFT JOIN del DAO
+    // @Transient le indica a JPA que estos campos no son columnas de la tabla 'usuario'
+    @Transient
+    private Integer idPaciente;
+    
+    @Transient
+    private String nombre;
+    
+    @Transient
+    private String apellido;
+    
+    @Transient
+    private String dni;
+    
+    @Transient
+    private String celular;
 
     // --- CONSTRUCTORES ---
     public Usuario() {
@@ -37,7 +54,7 @@ public class Usuario {
         this.cambioPendiente = 0; // Valor por defecto
     }
 
-    // 🆕 Constructor completo incluyendo la nueva bandera
+    // Constructor completo incluyendo la bandera cambioPendiente
     public Usuario(Integer idUsuario, String correo, String password, String rol, int cambioPendiente) {
         this.idUsuario = idUsuario;
         this.correo = correo;
@@ -46,7 +63,7 @@ public class Usuario {
         this.cambioPendiente = cambioPendiente;
     }
 
-    // --- GETTERS Y SETTERS MANUALES (Infalibles) ---
+    // --- GETTERS Y SETTERS MANUALES ---
     public Integer getIdUsuario() {
         return idUsuario;
     }
@@ -79,12 +96,52 @@ public class Usuario {
         this.rol = rol;
     }
 
-    // 🆕 GETTER Y SETTER MANUAL PARA LA CONTRASEÑA TEMPORAL
     public int getCambioPendiente() {
         return cambioPendiente;
     }
 
     public void setCambioPendiente(int cambioPendiente) {
         this.cambioPendiente = cambioPendiente;
+    }
+
+    // 🆕 GETTERS Y SETTERS COMPLETOS PARA LA DATA DEL PACIENTE
+    public Integer getIdPaciente() {
+        return idPaciente;
+    }
+
+    public void setIdPaciente(Integer idPaciente) {
+        this.idPaciente = idPaciente;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public String getApellido() {
+        return apellido;
+    }
+
+    public void setApellido(String apellido) {
+        this.apellido = apellido;
+    }
+
+    public String getDni() {
+        return dni;
+    }
+
+    public void setDni(String dni) {
+        this.dni = dni;
+    }
+
+    public String getCelular() {
+        return celular;
+    }
+
+    public void setCelular(String celular) {
+        this.celular = celular;
     }
 }
