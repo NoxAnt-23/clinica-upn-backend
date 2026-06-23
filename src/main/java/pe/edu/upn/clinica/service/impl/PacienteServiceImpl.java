@@ -1,6 +1,6 @@
 package pe.edu.upn.clinica.service.impl;
 
-import pe.edu.upn.clinica.dao.PacienteDao;
+import pe.edu.upn.clinica.dao.PacienteDAO;
 import pe.edu.upn.clinica.entity.Paciente;
 import pe.edu.upn.clinica.service.PacienteService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 public class PacienteServiceImpl implements PacienteService {
 
     @Autowired
-    private PacienteDao pacienteDao;
+    private PacienteDAO pacienteDao;
 
     // Inyectamos la herramienta que configuramos en SecurityConfig
     @Autowired

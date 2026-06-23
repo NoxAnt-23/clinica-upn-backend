@@ -4,14 +4,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional; // <-- ¡El import mágico para la transacción!
-import pe.edu.upn.clinica.dao.CitaDao;
+import pe.edu.upn.clinica.dao.CitaDAO;
 import pe.edu.upn.clinica.entity.Cita;
 
 import java.util.List;
 import java.util.Map;
 
 @Repository
-public class CitaDaoImpl implements CitaDao {
+public class CitaDAOImpl implements CitaDAO {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;

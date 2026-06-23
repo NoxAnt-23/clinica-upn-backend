@@ -20,15 +20,30 @@ public class Usuario {
     @Column(nullable = false, length = 20)
     private String rol;
 
+    // 🆕 NUEVO: Variable bandera para el primer inicio de sesión obligatorio
+    @Column(name = "cambio_pendiente", nullable = false, columnDefinition = "TINYINT DEFAULT 0")
+    private int cambioPendiente;
+
     // --- CONSTRUCTORES ---
     public Usuario() {
     }
 
+    // Constructor antiguo para mantener compatibilidad con tus flujos existentes
     public Usuario(Integer idUsuario, String correo, String password, String rol) {
         this.idUsuario = idUsuario;
         this.correo = correo;
         this.password = password;
         this.rol = rol;
+        this.cambioPendiente = 0; // Valor por defecto
+    }
+
+    // 🆕 Constructor completo incluyendo la nueva bandera
+    public Usuario(Integer idUsuario, String correo, String password, String rol, int cambioPendiente) {
+        this.idUsuario = idUsuario;
+        this.correo = correo;
+        this.password = password;
+        this.rol = rol;
+        this.cambioPendiente = cambioPendiente;
     }
 
     // --- GETTERS Y SETTERS MANUALES (Infalibles) ---
@@ -62,5 +77,14 @@ public class Usuario {
 
     public void setRol(String rol) {
         this.rol = rol;
+    }
+
+    // 🆕 GETTER Y SETTER MANUAL PARA LA CONTRASEÑA TEMPORAL
+    public int getCambioPendiente() {
+        return cambioPendiente;
+    }
+
+    public void setCambioPendiente(int cambioPendiente) {
+        this.cambioPendiente = cambioPendiente;
     }
 }
