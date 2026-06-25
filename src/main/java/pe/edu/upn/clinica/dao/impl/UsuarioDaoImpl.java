@@ -22,14 +22,16 @@ public class UsuarioDAOImpl implements UsuarioDAO {
         jdbcTemplate.update(sql, usuario.getCorreo(), usuario.getPassword(), usuario.getRol());
     }
 
-    // 🔍 NUEVO: Buscar por correo usando JDBC nativo
+    // 🔍 Buscar por correo usando JDBC nativo
     @Override
     public Usuario buscarPorCorreo(String correo) {
-        // 🔍 Unimos la tabla usuario con paciente para extraer toda la data personal de golpe
+        // 🔍 CORREGIDO: Añadimos p.dni y p.celular en el SELECT para que viajen al Frontend
         String sql = "SELECT u.id_usuario, u.correo, u.password, u.rol, u.cambio_pendiente, " +
-                    "p.id_paciente, p.nombre, p.apellido, p.dni, p.celular " +
+                    "p.id_paciente, p.nombre AS nombre_pac, p.apellido AS apellido_pac, p.dni, p.celular, " + // 🌟 ¡Campos agregados aquí!
+                    "m.id_personal_salud, m.nombre AS nombre_med, m.apellido AS apellido_med, m.tipo_personal " +
                     "FROM usuario u " +
                     "LEFT JOIN paciente p ON u.id_usuario = p.id_usuario " +
+                    "LEFT JOIN personal_salud m ON u.id_usuario = m.id_usuario " +
                     "WHERE u.correo = ?";
         try {
             return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
@@ -40,17 +42,24 @@ public class UsuarioDAOImpl implements UsuarioDAO {
                 u.setRol(rs.getString("rol"));
                 u.setCambioPendiente(rs.getInt("cambio_pendiente"));
                 
-                // 🆕 MAPEAMOS LOS CAMPOS DEL PACIENTE SI EXISTEN
-                // rs.getInt devuelve 0 si el campo es NULL en la BD (como en el caso del ADMIN)
+                // 🩺 Si es Paciente, extraemos su data completa
                 int idPac = rs.getInt("id_paciente");
                 if (!rs.wasNull()) {
                     u.setIdPaciente(idPac);
+                    u.setNombre(rs.getString("nombre_pac"));
+                    u.setApellido(rs.getString("apellido_pac"));
+                    // ✅ NUEVO MAPEO: Guardamos los valores físicos de la BD en la Entidad
+                    u.setDni(rs.getString("dni"));         
+                    u.setCelular(rs.getString("celular")); 
                 }
                 
-                u.setNombre(rs.getString("nombre"));
-                u.setApellido(rs.getString("apellido"));
-                u.setDni(rs.getString("dni"));
-                u.setCelular(rs.getString("celular"));
+                // 🥼 Si es Médico, extraemos su data y reutilizamos los campos de la Entidad
+                int idMed = rs.getInt("id_personal_salud");
+                if (!rs.wasNull()) {
+                    u.setIdPaciente(idMed); // Reutilizamos temporalmente idPaciente en la entidad para el ID del médico
+                    u.setNombre(rs.getString("nombre_med"));
+                    u.setApellido(rs.getString("apellido_med"));
+                }
                 
                 return u;
             }, correo);
@@ -59,7 +68,7 @@ public class UsuarioDAOImpl implements UsuarioDAO {
         }
     }
 
-    // 🆕 NUEVO MÉTODO: Para apagar la bandera cuando cambie la clave
+    // 🆕 MÉTODO: Para apagar la bandera cuando cambie la clave
     public void desactivarCambioPendiente(int idUsuario) {
         String sql = "UPDATE usuario SET cambio_pendiente = 0 WHERE id_usuario = ?";
         jdbcTemplate.update(sql, idUsuario);

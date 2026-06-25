@@ -6,6 +6,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Column;
+import jakarta.persistence.Transient;
 
 @Entity
 @Table(name = "paciente")
@@ -13,6 +14,10 @@ public class Paciente {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_paciente") // ✅ Mapea la llave primaria real de la tabla paciente
+    private Integer idPaciente;
+    
+    @Column(name = "id_usuario") // ✅ Mapea la relación con la cuenta global
     private Integer idUsuario;
     
     private String nombre;
@@ -27,18 +32,22 @@ public class Paciente {
     @Column(nullable = true)
     private String sexo;
     
+    @Column(name = "fecha_nacimiento") // Sincroniza el alias de la BD
     private String fechaNacimiento;
+    
     private String dni;
     private String correo;
     
-    // En tu archivo Paciente.java
-    @jakarta.persistence.Transient
+    @Transient // No se guarda en la tabla física de paciente, solo viaja en el login
     private String password;
 
     // Constructores
     public Paciente() {}
 
-    // Getters y Setters
+    // Getters y Setters Corregidos
+    public Integer getIdPaciente() { return idPaciente; }
+    public void setIdPaciente(Integer idPaciente) { this.idPaciente = idPaciente; }
+
     public Integer getIdUsuario() { return idUsuario; }
     public void setIdUsuario(Integer idUsuario) { this.idUsuario = idUsuario; }
 
@@ -66,7 +75,6 @@ public class Paciente {
     public String getCorreo() { return correo; }
     public void setCorreo(String correo) { this.correo = correo; }
 
-    // Getters y Setters de la contraseña
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
 }

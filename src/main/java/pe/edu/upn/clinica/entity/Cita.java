@@ -7,14 +7,18 @@ public class Cita {
     private String fecha;
     private String hora;
     private String modalidad;
-    private String especialidad; // <-- ¡Añadido!
-    private String descripcion;  // <-- Lo mantenemos para el problema del paciente
+    private String especialidad; 
+    private String descripcion;  
     private String estado;
     private String sede;
     private String consultorio;
     private String enlaceSesion;
+    
+    // 🔥 ¡NUEVOS ATRIBUTOS PARA EL PORTAL DEL MÉDICO!
+    private String paciente; // Para guardar el nombre concatenado
+    private String dni;      // Para que funcione el buscador en React
 
-    // --- GETTERS Y SETTERS ---
+    // --- GETTERS Y SETTERS ORIGINALES ---
     public Integer getIdCita() { return idCita; }
     public void setIdCita(Integer idCita) { this.idCita = idCita; }
 
@@ -50,4 +54,11 @@ public class Cita {
 
     public String getEnlaceSesion() { return enlaceSesion; }
     public void setEnlaceSesion(String enlaceSesion) { this.enlaceSesion = enlaceSesion; }
+
+    // --- GETTERS Y SETTERS NUEVOS ---
+    public String getPaciente() { return paciente; }
+    public void setPaciente(String paciente) { this.paciente = paciente; }
+
+    public String getDni() { return dni; }
+    public void setDni(String dni) { this.dni = dni; }
 }
