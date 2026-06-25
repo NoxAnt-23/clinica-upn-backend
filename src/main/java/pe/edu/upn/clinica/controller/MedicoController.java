@@ -51,16 +51,12 @@ public class MedicoController {
         }
     }
 
-    // ✅ CORREGIDO: Este es el endpoint que tu DashboardMedico llama para listar la agenda.
-    // Ahora incluye c.modalidad y c.enlace_sesion para habilitar la teleconsulta en React.
+    // 🩺 Endpoint profesional llamando al Procedimiento Almacenado
     @GetMapping("/citas/{id}")
     public List<Map<String, Object>> obtenerCitasPorMedico(@PathVariable int id) {
-        String sql = "SELECT c.id_cita, c.fecha, c.hora, c.modalidad, c.enlace_sesion AS enlace, c.estado, " +
-                     "p.nombre AS paciente " +
-                     "FROM cita c " +
-                     "JOIN paciente p ON c.id_paciente = p.id_paciente " +
-                     "WHERE c.id_personal_salud = ? " +
-                     "ORDER BY c.fecha, c.hora";
+        String sql = "CALL sp_listar_citas_por_medico(?)";
+        
+        System.out.println("=== EJECUTANDO SP PARA AGENDA DEL MÉDICO ID: " + id + " ===");
         
         return jdbcTemplate.queryForList(sql, id);
     }

@@ -48,7 +48,16 @@ public class CitaDAOImpl implements CitaDAO {
 
     @Override
     public List<Map<String, Object>> listarPorPaciente(int idPaciente) {
-        String sql = "SELECT * FROM cita WHERE id_paciente = ? ORDER BY fecha DESC";
+        // 🔍 CORREGIDO: Extraemos nombre y apellido desde 'p' (personal_salud) y no desde 'u'
+        String sql = "SELECT c.id_cita, c.id_paciente, c.id_personal_salud, c.fecha, c.hora, " +
+                     "c.modalidad, c.especialidad, c.estado, c.sede, c.consultorio, c.enlace_sesion, " +
+                     "CONCAT('Dr(a). ', p.nombre, ' ', p.apellido) AS medico " + // ✅ Apunta a 'p'
+                     "FROM cita c " +
+                     "LEFT JOIN personal_salud p ON c.id_personal_salud = p.id_personal_salud " +
+                     "LEFT JOIN usuario u ON p.id_usuario = u.id_usuario " +
+                     "WHERE c.id_paciente = ? " +
+                     "ORDER BY c.fecha DESC, c.hora DESC";
+                        
         return jdbcTemplate.queryForList(sql, idPaciente);
     }
 

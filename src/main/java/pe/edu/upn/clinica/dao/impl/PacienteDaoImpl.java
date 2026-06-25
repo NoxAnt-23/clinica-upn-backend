@@ -14,21 +14,20 @@ public class PacienteDAOImpl implements PacienteDAO {
 
     @Override
     public void insertar(Paciente paciente) {
-        // Quitamos el signo de interrogación del ID, y nos aseguramos de que haya 9
-        // (Nombre, Apellido, Celular, Direccion, Sexo, Fecha, DNI, Correo, Password)
+        // ✅ CORREGIDO: Sincronizado estrictamente con el orden de entrada del SP
+        // CALL sp_insertar_paciente(p_dni, p_nombre, p_apellido, p_celular, p_direccion, p_sexo, p_fecha_nac, p_correo, p_password)
         String sql = "CALL sp_insertar_paciente(?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         jdbcTemplate.update(sql, 
-            // ELIMINAMOS paciente.getIdUsuario(),
-            paciente.getNombre(),
-            paciente.getApellido(),
-            paciente.getCelular(),
-            paciente.getDireccion(),
-            paciente.getSexo(),
-            paciente.getFechaNacimiento(),
-            paciente.getDni(),
-            paciente.getCorreo(),
-            paciente.getPassword() // ¡Agregamos la contraseña que viene de React!
+            paciente.getDni(),             // 1. 🆕 ¡El DNI pasa a la primera posición obligatoria!
+            paciente.getNombre(),          // 2. Nombre
+            paciente.getApellido(),        // 3. Apellido
+            paciente.getCelular(),         // 4. Celular
+            paciente.getDireccion(),       // 5. Direccion
+            paciente.getSexo(),            // 6. Sexo
+            paciente.getFechaNacimiento(), // 7. Fecha de Nacimiento
+            paciente.getCorreo(),          // 8. Correo
+            paciente.getPassword()         // 9. Contraseña ya hasheada desde el Service
         );
     }
 }
