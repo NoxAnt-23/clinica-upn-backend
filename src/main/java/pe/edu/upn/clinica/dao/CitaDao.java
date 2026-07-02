@@ -13,4 +13,6 @@ public interface CitaDAO {
     void cancelarCita(int idCita);
 
     List<Map<String, Object>> listarPorMedico(int idMedico);
+    List<Map<String, Object>> listarTodas();
+    void marcarLlegada(int idCita);
 }

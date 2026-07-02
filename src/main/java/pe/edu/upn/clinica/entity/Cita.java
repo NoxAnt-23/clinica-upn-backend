@@ -13,6 +13,7 @@ public class Cita {
     private String sede;
     private String consultorio;
     private String enlaceSesion;
+
     
     // 🔥 ¡NUEVOS ATRIBUTOS PARA EL PORTAL DEL MÉDICO!
     private String paciente; // Para guardar el nombre concatenado

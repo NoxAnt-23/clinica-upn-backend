@@ -25,10 +25,10 @@ public class CitaController {
     @PostMapping("/reservar")
     public ResponseEntity<?> reservarCita(@RequestBody Cita cita) {
         try {
-            // 🛡️ PARCHE DE CONTROL: Sobrescribimos cualquier intento de forzar "Pagado" 
+            // 🛡️ PARCHE DE CONTROL: Sobrescribimos cualquier intento de forzar "Pagado"
             // Garantiza que la cita nazca como debe ser para que funcione tu modal de Yape
             cita.setEstado("Pendiente de Pago");
-            
+
             citaDao.reservar(cita);
             return ResponseEntity.ok().body("{\"mensaje\": \"Cita reservada con éxito\"}");
         } catch (Exception e) {
@@ -82,12 +82,12 @@ public class CitaController {
     @PutMapping("/enlace/{id}")
     public ResponseEntity<?> actualizarEnlaceCita(@PathVariable int id, @RequestBody Map<String, String> request) {
         String nuevoEnlace = request.get("enlace");
-        
+
         try {
             // Ejecutamos el query directo para actualizar la columna enlace_sesion en MySQL
             String sql = "UPDATE cita SET enlace_sesion = ? WHERE id_cita = ?";
             int filasAfectadas = jdbcTemplate.update(sql, nuevoEnlace, id);
-            
+
             if (filasAfectadas > 0) {
                 return ResponseEntity.ok(Map.of("status", "success", "message", "Enlace guardado correctamente"));
             } else {
@@ -95,7 +95,37 @@ public class CitaController {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error en el servidor: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error en el servidor: " + e.getMessage());
         }
     }
+
+    // --- NUEVO ENDPOINT PARA EL ASISTENTE ---
+    @GetMapping("/asistente/todas")
+    public ResponseEntity<?> listarTodasLasCitas() {
+        try {
+            // Nota para el equipo: Tienen que crear este método en el CitaDAO
+            // Debe hacer un SELECT a la vista o tabla cruzando Cita, Paciente y
+            // Usuario(Doctor)
+            List<Map<String, Object>> citas = citaDao.listarTodas();
+            return ResponseEntity.ok(citas);
+        } catch (Exception e) {
+            System.out.println("❌ ERROR AL OBTENER CITAS GENERALES: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al cargar la agenda general");
+        }
+    }
+
+    @PutMapping("/llegada/{idCita}")
+    public ResponseEntity<?> marcarLlegadaCita(@PathVariable("idCita") int idCita) {
+        try {
+            citaDao.marcarLlegada(idCita);
+            return ResponseEntity.ok().body("{\"mensaje\": \"Paciente en sala de espera\"}");
+        } catch (Exception e) {
+            System.out.println("❌ ERROR EN MARCAR LLEGADA: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al actualizar estado");
+        }
+    }
+
 }
